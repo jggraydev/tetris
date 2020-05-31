@@ -7,9 +7,20 @@ import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
 
+import Shapes.Grid;
 import Shapes.Shape;
 import Shapes.Shape.ShapeConfig;
 import input.Keyboard;
+
+
+// TODO LIST:
+//   -make game over check
+//   -make setting new active block a shape that's random
+
+//   -shape rotation
+//   -line clear count >>> increase difficulty level
+// UI
+//    -next shape(s) queue
 
 public class Game extends Canvas implements Runnable{
 	
@@ -18,7 +29,7 @@ public class Game extends Canvas implements Runnable{
 	 */
 	private static final long serialVersionUID = 1L;
 	public static int scale = 3;
-	public static int width = 150;
+	public static int width = 500;
 	public static int height = width * 16 / 9;
 	public static String title = "Tetris v2";
 	
@@ -32,7 +43,7 @@ public class Game extends Canvas implements Runnable{
 	public Keyboard key;
 	
 	public Game() {
-		Dimension size = new Dimension(width * scale, height * scale);
+		Dimension size = new Dimension(width, height);
 		setPreferredSize(size);
 		
 		frame = new JFrame();
@@ -42,7 +53,7 @@ public class Game extends Canvas implements Runnable{
 		addKeyListener(key);
 		
 		master = new Grid(key);
-		master.activeShape = new Shape(ShapeConfig.SQUARE, Grid.width, Grid.height);
+		//master.activeShape = new Shape(ShapeConfig.SQUARE, master);
 
 	}
 	
@@ -112,8 +123,22 @@ public class Game extends Canvas implements Runnable{
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
 		
-		// RENDER GRID 
+		
+		// RENDER GRID + UI 
 		master.renderBlocks(g);
+		master.renderTickDownTimer(g, width, height);
+		master.renderScore(g, width, height);
+		
+		// POTENTIAL BUG -- When row clearing, the new active shape should NOT be set.
+		//   active shape should only be set after game realizes it's not clearing any more and that 
+		//   the clearing process does a check for a game over
+		//   game over should be checked after each block set
+		//   only after checking for game over should new active block be set.
+		//       set new active block should be in the checkForGameOver 
+		if(master.rowClearing) {
+			g.setColor(Color.WHITE);
+			g.drawString("Row clearing...", width - 150, height - 50);
+		}
 		
 		
 		g.dispose();
@@ -124,12 +149,7 @@ public class Game extends Canvas implements Runnable{
 	
 	// KEY BINDINGS
 	public void update() {
-		
 		master.update();
-
-		
-		
-		
 	}//def update
 	
 	
