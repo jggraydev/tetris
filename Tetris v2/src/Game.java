@@ -12,15 +12,22 @@ import Shapes.Shape;
 import Shapes.Shape.ShapeConfig;
 import input.Keyboard;
 
-
+/*
 // TODO LIST:
-//   -make game over check
-//   -make setting new active block a shape that's random
 
-//   -shape rotation
-//   -line clear count >>> increase difficulty level
 // UI
 //    -next shape(s) queue
+
+// other
+// -complete exit game via holding esc key
+// -fix randomness of next shape - getting a lot of duplicates
+
+// SoundFX
+// SOUND FILES BY
+// 	Jalastram (Jesus Lastra)
+// 	jalastram@gmail.com 
+
+ */
 
 public class Game extends Canvas implements Runnable{
 	
@@ -52,7 +59,7 @@ public class Game extends Canvas implements Runnable{
 		key = new Keyboard();
 		addKeyListener(key);
 		
-		master = new Grid(key);
+		master = new Grid(key, width, height);
 		//master.activeShape = new Shape(ShapeConfig.SQUARE, master);
 
 	}
@@ -81,7 +88,7 @@ public class Game extends Canvas implements Runnable{
 		int fpsCounter = 0;
 		int updateCounter = 0;
 		
-		int tickRate = 60;
+		int tickRate = 63;
 		int nanoSecondsPerSec = 1000000000;
 		double timeBetweenUpdates = nanoSecondsPerSec / (double)tickRate;
 		
@@ -125,20 +132,7 @@ public class Game extends Canvas implements Runnable{
 		
 		
 		// RENDER GRID + UI 
-		master.renderBlocks(g);
-		master.renderTickDownTimer(g, width, height);
-		master.renderScore(g, width, height);
-		
-		// POTENTIAL BUG -- When row clearing, the new active shape should NOT be set.
-		//   active shape should only be set after game realizes it's not clearing any more and that 
-		//   the clearing process does a check for a game over
-		//   game over should be checked after each block set
-		//   only after checking for game over should new active block be set.
-		//       set new active block should be in the checkForGameOver 
-		if(master.rowClearing) {
-			g.setColor(Color.WHITE);
-			g.drawString("Row clearing...", width - 150, height - 50);
-		}
+		master.render(g);
 		
 		
 		g.dispose();
