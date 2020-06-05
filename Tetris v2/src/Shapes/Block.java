@@ -17,6 +17,10 @@ public class Block {
 		SET
 	};
 	
+	public Block() {
+		
+	}
+	
 	public Block (int x, int y, ShapeConfig parent) {
 		this.x = x;
 		this.y = y;
@@ -24,25 +28,25 @@ public class Block {
 		
 		if(parent == ShapeConfig.EMPTY) {
 			type = BlockType.EMPTY;
-			color = new Color(0, 0, 0);
+			color = new Color(65, 65, 65, 100);
 		}else {
 			type = BlockType.SET;
 			
 			
 			if(parent == ShapeConfig.LINE) {
-				color = new Color(0, 191, 255); // MEDIUM LIGHT BLUE
+				color = new Color(0, 175, 201); // MEDIUM LIGHT BLUE
 			} else if(parent == ShapeConfig.SQUARE) {
-				color = new Color(0, 128, 255); // MEDIUM BLUE
+				color = new Color(222, 209, 0); // YELLOW
 			}else if(parent == ShapeConfig.T) {
-				color = new Color(255, 0, 191); // MAGENTA RED 
+				color = new Color(175, 0, 212); // PURPLE
 			}else if(parent == ShapeConfig.J) {
-				color = new Color(157, 141, 0); // OCHRE
+				color = new Color(217, 146, 0); // ORANGE
 			}else if(parent == ShapeConfig.L) {
-				color = new Color(216, 191, 3); // gold
+				color = new Color(0, 122, 202); // BLUE
 			}else if(parent == ShapeConfig.S) {
-				color = new Color(206, 125, 3); // med orange
+				color = new Color(0, 196, 78); // GREEN
 			}else if(parent == ShapeConfig.Z) {
-				color = new Color(252, 54, 166); // hot pink
+				color = new Color(196, 0, 0); // RED
 			}else if(parent == ShapeConfig.TEST) {
 				color = new Color(255, 255, 255); // white
 			}else {
