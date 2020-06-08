@@ -19,6 +19,7 @@ public class Grid {
 	public int heightLeeway = 2;
 	public int safeZoneHeight = 6;
 	public int heightTrue = height + safeZoneHeight;
+	public boolean running;
 	
 	public int screenWidth;
 	public int screenHeight;
@@ -28,7 +29,7 @@ public class Grid {
 	public int blockGutter = 6; // PIXELS between each block
 	public int blockWidth = 25; 
 	public int blockHeight = blockWidth;
-	public int gridInitOffsetX = 30; // the amount of space the grid should start with for the first block
+	public int gridInitOffsetX = 30; 
 	public int gridInitOffsetY = 30;
 	
 	private int gridPlaneAlphaMax = 100;
@@ -47,8 +48,10 @@ public class Grid {
 	private int inputDelayCounterLeft = 0;
 	private int inputDelayCounterRight = 0;
 	
+	
 	// block queue
-	public int shapeQueueSizeLimit = 3;
+	public int shapeQueueSizeLimit = 7;
+	public int shapeQueueSizeTrigger = 3;
 	public ArrayList<Shape> shapeQueue = new ArrayList<Shape>();
 	private int blockWidthQueue = 10;
 	private int blockHeightQueue = blockWidthQueue;
@@ -56,6 +59,9 @@ public class Grid {
 	
 	
 	// tick speed
+	public int tickDownCounterSpeed = 48;
+	public int[] tickDownSpeeds = {48, 43, 38, 33, 28, 23, 18, 13, 8, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1}; // based on the NES tetris
+	public int tickDownIndex = 0;
 	public int tickDownRate = 1;
 	public int tickRate = 60;
 	public int nanoSecondsPerSec = 1000000000;
@@ -79,10 +85,11 @@ public class Grid {
 	int clearedLinesCount = 0;
 	public boolean lastClearTetris = false;
 	public boolean currentClearTetris = false;
-	private int level = 1;
+	private int level = 0;
 	private int uixPadding = 30;
 	private int uixMargin = gridInitOffsetX + (blockWidth + blockGutter) * width + uixPadding; // (gamePadding + 100);
 	private int uiyMargin = gridInitOffsetY; //screenHeight - 200;
+	
 	
 	// tick down rate bar
 	private int tdBarWidth = 9;
@@ -93,6 +100,7 @@ public class Grid {
 	private Color tdBarColor = new Color(100, 100, 100);
 	private Color tdBarColorInner = new Color(255, 255, 255);
 	private Color tdBarColorProgress = new Color(255, 0, 0);
+	
 	
 	// line drought counter
 	private int lineDroughtCount = 0;
@@ -107,6 +115,7 @@ public class Grid {
 	private int ldfpMillerA = 2;
 	private int ldfpMillerB = 0;
 	private int ldfpMillerBStart = 0;
+	
 	
 	// game over components
 	public boolean isGameOver = false;
@@ -126,7 +135,6 @@ public class Grid {
 	// FAULT LINE
 	public Color faultLineColorGreen = new Color(30, 175, 20);
 	public Color faultLineColor = faultLineColorGreen;
-	
 	
 	public int faultBlockColorVal = 255;
 	public int faultBlockFlashParity = 25;
@@ -158,6 +166,7 @@ public class Grid {
 		screenWidth = w;
 		screenHeight = h;
 		
+		
 		//set random shapes into queue
 		for(int i = 0; i < shapeQueue.size(); i++) {
 			//shapeQueue[i] = getNewShape();
@@ -174,13 +183,13 @@ public class Grid {
 		
 	}
 	
+	
 	public double getTimeBetweenTickDowns() {
-		return nanoSecondsPerSec / tickDownRate;
+		return (nanoSecondsPerSec) * ((double)tickDownCounterSpeed / tickRate);
 	}
 	
+	
 	public void update() {		
-		
-		
 		// handle fault line danger color
 		boolean faultLineDanger = false;
 		
@@ -194,6 +203,7 @@ public class Grid {
 				}
 			}// for x
 		}// for y
+		
 		
 		// update color
 		if(faultLineDanger) {
@@ -213,6 +223,7 @@ public class Grid {
 		
 		addToShapeQueue();
 		
+		
 		// quit game if escape key held
 		if(key.keys[KeyEvent.VK_ESCAPE]) {
 			escCounter++;
@@ -230,7 +241,7 @@ public class Grid {
 			
 			
 			if(escCounter >= escCounterTrigger) {
-				// close window
+				// trigger game close
 			}
 		}else {
 			escCounter = 0;
@@ -238,7 +249,8 @@ public class Grid {
 			escMsgFlashCounter = escMsgFlashParity;
 		}
 		
-		// update flashing of line drought shape
+		
+		// update flashing shape for the line drought indicator
 		if(lineDroughtCount >= lineDroughtIndicator) {
 			lineDroughtAlphaVal += lineDroughtAlphaParity;
 			
@@ -256,22 +268,20 @@ public class Grid {
 		}
 		
 		
-		// this branch halts updating the game state until clearRow() has cleared it's block queue
+		// divert from updating other game state until clearRow() has cleared it's block queue
 		if(rowClearing) {
 			clearRow();
 			return;
 		}
 
 		
+		//game over state
 		if(isGameOver) {
-			
-			
 			if(!gameOverFirstTriggered) {
 				SoundEffect.setFile(Sound.gameOver);
 				SoundEffect.play();
 				gameOverFirstTriggered = true;
 			}
-			
 			
 			//change color of faulting blocks inorder to flash
 			// render safe zone blocks
@@ -303,6 +313,8 @@ public class Grid {
 			return;
 		}
 		
+		
+		// get new active shape if there is none
 		if(activeShape == null) {
 			activeShape = shapeQueue.get(0); 
 			shapeQueue.remove(0);
@@ -325,8 +337,9 @@ public class Grid {
 		activeShape.currTime = System.nanoTime();
 		
 		
-		// === KEY BINDINGS ===========
-		
+		// ======================================================
+		// === KEY BINDINGS =====================================
+		// ======================================================
 		
 		//LEFT
 		if(key.keys[KeyEvent.VK_LEFT]) {
@@ -356,6 +369,7 @@ public class Grid {
 			}
 		}// if/else
 		
+		// rotate left/right
 		if(key.keys[KeyEvent.VK_Z]) {
 			if(!key.keysTrigger[KeyEvent.VK_Z]) {
 				key.keysTrigger[KeyEvent.VK_Z] = true;
@@ -369,10 +383,13 @@ public class Grid {
 		}
 		
 		
+		// soft drop
 		if(key.keys[KeyEvent.VK_DOWN]) {
 			activeShape.tickDown();
 		}
 		
+		
+		//test sound effect
 		if(key.keys[KeyEvent.VK_SPACE]) {
 
 			if(!key.keysTrigger[KeyEvent.VK_SPACE]) {
@@ -384,7 +401,6 @@ public class Grid {
 		}
 		
 		// ======= check tick down ==============================
-		
 		if(activeShape != null) {
 			if(activeShape.justSpawned) {
 				activeShape.justSpawned = false;
@@ -400,6 +416,7 @@ public class Grid {
 	}// || || || === def update ==============================================================================================
 	
 	
+	// render score / line count / drought counter
 	public void renderScoreCounters(Graphics g) {
 		Color textColor = new Color(255, 255, 255);
 		g.setColor(textColor);
@@ -430,8 +447,8 @@ public class Grid {
 			if(currShape.config == ShapeConfig.LINE) {
 				lineInQueue = true;
 				break;
-			}
-		}
+			}//if
+		}//for
 		
 		if(lineDroughtCount >= lineDroughtIndicator && !lineInQueue) {
 			textToRender = "Drought: " + lineDroughtCount;
@@ -445,9 +462,9 @@ public class Grid {
 			for(int i = 0; i < lineDroughtShape.blocks.length; i++) {
 				g.fillRect(x, y, lineDroughtBlockWidth, lineDroughtBlockHeight);
 				x += lineDroughtBlockGutter + lineDroughtBlockWidth;
-			}
+			}//for
 			
-		}
+		}//if
 
 		
 		
@@ -478,9 +495,11 @@ public class Grid {
 			
 			uiy += 30;
 			
-			// SOUND FILES BY
-//		 	Jalastram (Jesus Lastra)
-//		 	jalastram@gmail.com 
+			/*
+			SOUND FILES BY
+		 	Jalastram (Jesus Lastra)
+		 	jalastram@gmail.com 
+			*/
 			
 			textToRender = "Sound effects by";
 			g.drawString(textToRender, uix, uiy);
@@ -503,21 +522,9 @@ public class Grid {
 		
 	}//def renderScoreCounters
 	
-	/*
-	
-	public void renderLineDrought(Graphics g) {
-		Color textColor = new Color(255, 255, 255);
-		g.setColor(textColor);
-		
-		int y = gamePadding + 200;
-		int x = screenWidth - (gamePadding + 40);				 
-
-
-	}
-	*/
 	
 	
-	
+	// render tick down gauge
 	public void renderTickDownTimer(Graphics g) {
 		long timeAtLastTickDown;
 		long currTime;
@@ -555,9 +562,9 @@ public class Grid {
 	}
 	
 	
+	
+	// renders set blocks and active block
 	public void renderBlocks(Graphics g) {
-		
-		
 		Block currBlock;
 		int yCurse = gridInitOffsetY;
 		int xCurse = gridInitOffsetX; 
@@ -588,18 +595,13 @@ public class Grid {
 		}//for y
 		
 		
-		// render fault line
-		//int lineThickness = blockGutter - 2;
+		// fault line is removed if game over
 		if(!isGameOver) {
 			int gridPixelWidth = (blockGutter + blockWidth) * width;
 			
 			g.setColor(faultLineColor);
 			g.fillRect(xCurse, yCurse - (faultLineThickness / 2) - 2, gridPixelWidth, faultLineThickness);
 		}
-		
-
-
-		
 		
 		
 		// render grid zone blocks
@@ -635,14 +637,13 @@ public class Grid {
 	}//def renderBlocks
 	
 	
+	//renders current shape
 	public void renderActiveShape(Graphics g) {
 		Block currBlock;
 		int yCurse = gridInitOffsetY;
 		int xCurse = gridInitOffsetX;
 		
 		if(activeShape != null) {
-			
-			
 			for(int i = 0; i < activeShape.blocks.length; i++) {
 				
 				currBlock = activeShape.blocks[i];
@@ -653,29 +654,12 @@ public class Grid {
 				
 				g.fillRect(xCurse, yCurse, blockWidth, blockHeight);
 				
-
-				
-				// rendering string
-				/*
-				
-				int cx1 = -(blockWidth / 2); //- (blockWidth / 6);
-				int cy1 = -(blockHeight / 2); //- (blockHeight / 6);
-				
-				xCurse -= cx1;
-				yCurse -= cy1;
-				
-				//g.setColor(textColor);
-				//String valString = "" + i;
-				
-				//g.drawString(valString, xCurse, yCurse);
-				
-				xCurse += cx1;
-				yCurse += cy1;
-				*/
 			}//for 
 		}
 	}//def renderActiveShape
 	
+	
+	// renders next shapes
 	public void renderShapeQueue(Graphics g) {
 		int yStart = uiyMargin + 90;
 		int xStart = uixMargin + 30;
@@ -684,13 +668,12 @@ public class Grid {
 		int yCurse = yStart;
 		
 		/*
-		
 		if(shapeQueue.size() == 0) {
 			return;
 		}
 		*/
 		
-		for(int i = 0; i < shapeQueue.size(); i++) {
+		for(int i = 0; i < shapeQueue.size() && i < shapeQueueSizeTrigger; i++) {
 			Shape currShape = shapeQueue.get(i);
 			g.setColor(currShape.blocks[0].color);
 			
@@ -707,21 +690,21 @@ public class Grid {
 			xCurse = xStart;
 			yCurse += 50;
 		}//for
+
 	}//def 
 	
+	
+	// adds random shapes to queue if the number of shapes is less than a certain amount
 	public void addToShapeQueue() {
-		if(shapeQueue.size() < shapeQueueSizeLimit) {
-			//int startIndex = shapeQueue.size();
-			//for(int i = startIndex; i < 10; i++) {
+		if(shapeQueue.size() < shapeQueueSizeTrigger) {
+			while(shapeQueue.size() < shapeQueueSizeLimit) {
 				shapeQueue.add(Shape.getNewShape(this));
-			//}
+			}
 		}
 	}
 	
 	
-	
 	public void moveShapeLeft() {
-		//check if there space in the grid to move left
 		boolean spaceVacant = true;
 		boolean inBounds = true;
 		Block currBlock;
@@ -757,7 +740,6 @@ public class Grid {
 	
 	
 	public void moveShapeRight() {
-		//check if there space in the grid to move left
 		boolean spaceVacant = true;
 		boolean inBounds = true;
 		Block currBlock;
@@ -790,11 +772,8 @@ public class Grid {
 		}//if vacant and in bounds		
 	}//def moveShapeRight
 	
-
-
 	
-	
-	
+	// clears rows that are fully filled
 	public void clearRow(){
 		// controls rate at which the lines clear away
 		if(clearRateIndex < clearRateA) {
@@ -828,18 +807,13 @@ public class Grid {
 			matrix[holdY][holdX] = currBlock;
 		}//for
 		
-	
-		
+		// resets counter and triggers end of row clearing
 		if(blockClearerColIndex == 0) {
 			blockClearerColIndex = width - 1;
 			rowClearing = false;
 					
 			incrementScore(blockClearer.length);
 			
-			
-			
-			System.out.println("Current clear tetris bool: " + currentClearTetris);
-			//int gapHeight = blockClearer.length;
 			shiftRowsDown(blockClearer);
 			//blockClearer = null;
 
@@ -849,7 +823,7 @@ public class Grid {
 	}//def clearRow
 	
 	
-	//pass in the blockClearer object, as it should contain the y coordinates that we need
+	//shift rows down after they've been cleared
 	public void shiftRowsDown(Block[][] blockArray) {
 		int[] rowCords = new int[blockArray.length];
 		
@@ -885,45 +859,48 @@ public class Grid {
 				
 				// the above shifted row should then become empty
 				matrix[aboveRowIndex][x] = new Block(x, aboveRowIndex, ShapeConfig.EMPTY);
-			}
-		}
-
-	}
+			}//for
+		}//for
+	}//def
 	
-
 	
+	// increments score and line count / updates level
 	public void incrementScore(int numRows) {
+		int scoreAmount = 0;
+		
 		if(numRows == 4) {
 			if(lastClearTetris) {
-				score += 400;
+				scoreAmount += 400;
 			}
 			lastClearTetris = true;
-			score += 800;
+			scoreAmount += 800;
 		} else {
 			lastClearTetris = false;
 			if(numRows == 1) {
-				score += 100;
+				scoreAmount += 100;
 			}else if(numRows == 2) {
-				score += 200;
+				scoreAmount += 200;
 			}else if(numRows == 3) {
-				score += 300;
+				scoreAmount += 300;
 			}//else
 		}//if lastClearTetris
+		score += scoreAmount;
 		clearedLinesCount += numRows;
+		
 		
 		if(clearedLinesCount >= 280) {
 			level = 29;
-			tickDownRate = 30;
+			tickDownIndex = 29;
 		}else
 		
 		if(clearedLinesCount >= 180) {
 			level = 19;
-			tickDownRate = 20;
+			tickDownIndex++;
 		}else
 			
 		if(clearedLinesCount >= 130) {
 			level = 14;
-			tickDownRate = 14;
+			tickDownRate++;
 		}else
 		if(clearedLinesCount >= 120) {
 			level = 13;
@@ -970,8 +947,12 @@ public class Grid {
 			level = 2;
 			tickDownRate = 2;
 		}
+		
+		tickDownCounterSpeed = tickDownSpeeds[tickDownIndex];
 	}//def incrementScore
 	
+	
+	// triggers boolean for game over after a block is set
 	public void checkGameOver() {
 		// checks for blocks above the fault line
 		for(int x = 0; x < width; x++) {
@@ -986,6 +967,7 @@ public class Grid {
 	}//def checkGameOver	
 	
 	
+	// renders game over message
 	public void gameOverMessage(Graphics g) {
 		// spawns game over
 		if(isGameOver) {

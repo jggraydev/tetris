@@ -23,6 +23,7 @@ public class Shape {
 	public int orientations = 1;
 	public int maxRotationIndex;
 	
+	
 	public static enum ShapeConfig {
 		LINE,
 		SQUARE,
@@ -34,6 +35,7 @@ public class Shape {
 		TEST,
 		EMPTY
 	}
+	
 	
 	public Shape(ShapeConfig config, Grid grid) {
 		this.config = config;
@@ -144,14 +146,7 @@ public class Shape {
 	
 	
 	
-	
-	
-	
-	
-	
-	// =======================================================================
-	// RECONFIGURE SHAPE =====================================================
-	// =======================================================================
+	// shuffles blocks around after being triggered by rotateLeft/Right
 	public void reconfigureShape(int oldCycle) {
 		if(orientations == 1) {
 			System.out.println("no shape rotation");
@@ -472,8 +467,6 @@ public class Shape {
 			}
 		}// S
 		
-
-		
 		// code for all shapes
 		for(int i = 0; i < coordHolder.length;i++) {
 			int x = coordHolder[i].x;
@@ -486,9 +479,7 @@ public class Shape {
 				System.out.println("Rotation nullfied: out of bounds OR set block obstruction");
 				rotationCycle = oldCycle;
 				return;
-			}
-
-			
+			}	
 		}//for
 		
 		
@@ -523,7 +514,6 @@ public class Shape {
 	}
 	
 	
-	
 	public void translateLeft() {
 		Block currBlock;
 		for(int i = 0; i < blocks.length; i++) {
@@ -542,6 +532,7 @@ public class Shape {
 	}//def translateRight
 	
 	
+	// moves block down and resets timer
 	public void tickDown() {
 		timeAtLastTickDown = System.nanoTime();
 		//Set up booleans and see if block ticking down will hit something
@@ -581,10 +572,8 @@ public class Shape {
 	}//def tickDown
 	
 	
-	
+	// handles if block should be set, and triggers game over check and line clearing
 	public void setBlock() {
-		
-		
 		int[] rowChecker = new int[blocks.length];
 		Block currBlock;
 		
@@ -678,6 +667,7 @@ public class Shape {
 	}//def setBlock
 	
 	
+	//sets new color value in each block
 	public void setColor(Color newColor){
 		for(int i = 0; i < blocks.length; i++) {
 			blocks[i].color = newColor;
