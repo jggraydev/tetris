@@ -11,15 +11,16 @@ public class Block {
 	public ShapeConfig parent;
 	
 	
-	
 	public static enum BlockType {
 		EMPTY,
 		SET
 	};
 	
+	
 	public Block() {
 		
 	}
+	
 	
 	public Block (int x, int y, ShapeConfig parent) {
 		this.x = x;
@@ -52,27 +53,24 @@ public class Block {
 			}else {
 				System.out.println("PARENT SHAPE ERROR");
 				color = new Color(255, 0, 0); // RED
-			}
+			}// if/else
 			
-			
-			
-			
-			
-		}
-	}
+		}//if/else
+	}//constructor
 	
 	
 	public void translateLeft() {
 		x--;
 	}
 	
+	
 	public void translateRight() {
 		x++;
 	}
+	
 	
 	public void tickDown() {
 		y--;
 	}
 	
-	
-}
+}// class

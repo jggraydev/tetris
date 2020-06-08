@@ -15,12 +15,9 @@ import input.Keyboard;
 /*
 // TODO LIST:
 
-// UI
-//    -next shape(s) queue
-
 // other
 // -complete exit game via holding esc key
-// -fix randomness of next shape - getting a lot of duplicates
+
 
 // SoundFX
 // SOUND FILES BY
@@ -31,9 +28,6 @@ import input.Keyboard;
 
 public class Game extends Canvas implements Runnable{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	public static int scale = 3;
 	public static int width = 500;
@@ -60,7 +54,6 @@ public class Game extends Canvas implements Runnable{
 		addKeyListener(key);
 		
 		master = new Grid(key, width, height);
-		//master.activeShape = new Shape(ShapeConfig.SQUARE, master);
 
 	}
 	
@@ -98,12 +91,14 @@ public class Game extends Canvas implements Runnable{
 		while(running) {
 			currTime = System.nanoTime();
 			
+			// updates game state
 			if(currTime - timeAtLastUpdate > timeBetweenUpdates) {
 				update();
 				updateCounter++;
 				timeAtLastUpdate = currTime;
 			}
 			
+			//updates window title bar with fps
 			if(currTime - timeAtLastUpdateCheck > nanoSecondsPerSec) {
 				frame.setTitle(title + "  |  fps: " + fpsCounter + ", updates: " + updateCounter);
 				updateCounter = 0;
@@ -115,6 +110,7 @@ public class Game extends Canvas implements Runnable{
 			render();
 		}//def while running
 	}//def run
+	
 	
 	public void render() {
 		BufferStrategy bs = getBufferStrategy();
@@ -130,18 +126,15 @@ public class Game extends Canvas implements Runnable{
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
 		
-		
 		// RENDER GRID + UI 
 		master.render(g);
 		
-		
 		g.dispose();
 		bs.show();
-		
 	}//def render
 	
 	
-	// KEY BINDINGS
+	// update game state --> most game state updates found in grid and shape file
 	public void update() {
 		master.update();
 	}//def update
