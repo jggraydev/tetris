@@ -205,7 +205,7 @@ public class Grid {
 		}// for y
 		
 		
-		// update color
+		// update fault line color
 		if(faultLineDanger) {
 			faultLineColorVal += faultLineDangerParity;
 			if(faultLineColorVal > 255) {
@@ -442,7 +442,7 @@ public class Grid {
 		
 		
 		boolean lineInQueue = false;
-		for(int i = 0; i < shapeQueue.size(); i++) {
+		for(int i = 0; i < shapeQueue.size() && i < shapeQueueSizeTrigger; i++) {
 			Shape currShape = shapeQueue.get(i);
 			if(currShape.config == ShapeConfig.LINE) {
 				lineInQueue = true;
